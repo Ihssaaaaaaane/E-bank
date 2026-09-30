@@ -1,94 +1,109 @@
-🏦 E-Bank — Full Stack (Spring Boot + React)
-A comprehensive e-banking application featuring JWT authentication, role-based access control, customer management, automated account creation, and a real-time client dashboard for financial operations.
+# E-Bank
 
-🏗 Project Architecture
-Backend: A robust REST API built with Spring Boot (Java 17).
+A banking application built with a Spring Boot REST API and a React frontend. The project includes authentication, customer and account management, a client dashboard, and bank transfers.
 
-Frontend: A modern User Interface developed with React (CRA) and styled with TailwindCSS.
+## Technology stack
 
-📋 Prerequisites
-Backend
-Java 17 (JDK)
+| Layer | Technologies |
+| --- | --- |
+| Backend | Java 17, Spring Boot 3.4.12, Spring Security, Spring Data JPA, JWT |
+| Frontend | React 19, React Router, Axios, Tailwind CSS, Create React App |
+| Database | MySQL |
+| Build tools | Maven Wrapper, npm |
 
-Maven (or use the provided Maven Wrapper)
+## Run locally
 
-MySQL (Running locally)
+Install JDK 17, MySQL, Node.js, and npm. The repository does not currently pin a Node.js version; use one compatible with the dependencies in `ebank-frontend/package-lock.json`.
 
-Frontend
-Node.js (LTS recommended)
+```sh
+git clone https://github.com/Ihssaaaaaaane/E-bank.git
+cd E-bank
+```
 
-npm (Node Package Manager)
+### 1. Configure the database and backend
 
-🚀 Quick Start Guide
-1. Database Setup
-Execute the following command in your MySQL environment:
+Create the database in MySQL:
+
+```sql
 CREATE DATABASE ebank_db;
-2. Default User Credentials
-Upon startup, the system automatically initializes the following users via the DataLoader:
-Role,Username,Password
-Agent (Guichet),agent,agentpass
-Client,Client,clientpass
-✨ Core Features
-🔐 Security & Authentication (JWT)
-The application secures endpoints using JSON Web Tokens.
+```
 
-Users log in to receive a JWT.
+Configure the backend through environment variables in your terminal or IDE:
 
-The frontend stores this token and includes it in every request header: Authorization: Bearer <token>
+| Variable | Purpose |
+| --- | --- |
+| `SPRING_DATASOURCE_URL` | Database URL; the configured default is `jdbc:mysql://localhost:3306/ebank_db` |
+| `SPRING_DATASOURCE_USERNAME` | Your local database user |
+| `SPRING_DATASOURCE_PASSWORD` | Your local database password |
+| `JWT_SECRET` | Your own Base64-encoded signing key; use at least 32 random bytes before encoding |
+| `GMAIL_USERNAME` | Gmail account used for outgoing mail |
+| `GMAIL_APP_PASSWORD` | App password for that mail account |
+| `MAIL_FROM` | Optional sender address; defaults to `GMAIL_USERNAME` |
 
-💼 Agent Capabilities (ROLE_AGENT_GUICHET)
-Customer Onboarding: Register new clients.
+Database and JWT environment variables override the corresponding Spring properties. Mail variables are referenced directly by the committed configuration. Keep real credentials outside Git. The committed defaults and seeded accounts are for local development.
 
-Account Management: Create new bank accounts for existing customers.
+### 2. Start the backend
 
-📱 Client Capabilities (ROLE_CLIENT)
-Dashboard: Overview of accounts and recent transaction history.
+```sh
+cd ebank-backend
+sh mvnw spring-boot:run
+```
 
-Transfers: Perform secure money transfers between accounts.
+On Windows, use `mvnw.cmd spring-boot:run`. The frontend expects the API at `http://localhost:8080`.
 
-📧 Email Configuration (Critical)
-The backend is designed to send login credentials to clients via email immediately after account creation.
+### 3. Start the frontend
 
-Setup Instructions: Update your application.properties with the following SMTP settings (configured for Gmail):
+In another terminal, from the repository root:
 
-Host: smtp.gmail.com:587
+```sh
+cd ebank-frontend
+npm ci
+npm start
+```
 
-Environment Variables:
+Open `http://localhost:3000`. The backend's CORS configuration allows this origin. Mail configuration is required for flows that send email, including customer onboarding and password recovery.
 
-GMAIL_USERNAME: Your professional or personal Gmail address.
+## Features
 
-GMAIL_APP_PASSWORD: A unique Gmail App Password (mandatory for security).
+- JWT authentication and role-based access for agents and clients.
+- Customer registration and bank account creation.
+- Account overview and operation history.
+- Transfers between accounts.
+- Password change and recovery flows.
 
-⚠️ Note: Customer creation may fail if these variables are not correctly configured.
+## Repository layout
 
-🛡 Security Configuration (JWT)
-The backend manages security via:
+```text
+ebank-backend/
+  src/main/java/com/ebank/
+    config/        # Security configuration
+    dtos/          # Request and response models
+    entities/      # Persistence models
+    repositories/  # Database access
+    security/      # JWT support
+    services/      # Application logic
+    web/           # REST controllers
+  src/main/resources/application.properties
+ebank-frontend/
+  src/api/         # API calls
+  src/auth/        # Authentication and protected routes
+  src/components/  # Shared UI
+  src/pages/       # Agent, client, and authentication screens
+```
 
-jwt.secret: A Base64 encoded secret key.
+## Development checks
 
-jwt.expiration: Set to 3600000 (1 hour).
+Backend, from `ebank-backend/`:
 
-Recommendation: For production environments, always use environment variables rather than hard-coding secrets in the source code.
+```sh
+sh mvnw test
+```
 
-🌐 API Endpoints
-Base URL: http://localhost:8080
+Frontend, from `ebank-frontend/`:
 
-Agent Operations
-POST /api/agents/clients: Create a new client.
+```sh
+npm test -- --watchAll=false
+npm run build
+```
 
-POST /api/agents/accounts: Open a new bank account.
-
-Client Operations
-GET /api/clients/dashboard: Fetch overview and operations.
-
-GET /api/clients/accounts: List all personal accounts.
-
-POST /api/clients/virement: Initiate a transfer.
-
-🛠 Troubleshooting
-Issue,Potential Solution
-MySQL Access Denied,Verify spring.datasource.username and password in application.properties.
-Email Failure,Confirm GMAIL_USERNAME and that the App Password is active in Google account settings.
-CORS / 403 Forbidden,Ensure you are logged in with the correct role for the endpoint you are accessing.
-Token Issues,Check that the JWT is correctly placed in the Authorization header.
-
+These commands and paths were checked against the committed project files. Builds, tests, and database/mail integration have not been run as part of this documentation update.
